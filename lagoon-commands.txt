@@ -1,0 +1,320 @@
+# Lagoon CLI Commands Reference
+
+## Introduction
+Lagoon CLI is a command-line interface for interacting with Lagoon instances. This document provides a comprehensive reference for common Lagoon CLI commands.
+
+## Installation
+
+### Via Homebrew
+```
+brew tap uselagoon/lagoon-cli
+brew install lagoon
+```
+
+### Via Docker
+```
+docker run \
+-v ~/.lagoon.yml:/root/.lagoon.yml:rw \
+-v ~/.ssh/cli_id_rsa:/root/.ssh/id_rsa:ro \
+uselagoon/lagoon-cli:latest \
+<command>
+```
+
+## Configuration
+
+### Configure Lagoon CLI for a specific instance
+```
+lagoon config add --lagoon instance-name \
+    --graphql https://api.example.com/graphql \
+    --hostname ssh.example.com \
+    --port 22
+```
+
+### Set default Lagoon instance
+```
+lagoon config default --lagoon instance-name
+```
+
+### List configuration
+```
+lagoon config list
+```
+
+## Authentication
+
+### Login to Lagoon
+```
+lagoon login
+```
+
+### Check current user
+```
+lagoon whoami
+```
+
+## Project Management
+
+### List Projects
+```
+lagoon list projects
+```
+Alias: `lagoon list p`
+
+### List Projects with JSON output
+```
+lagoon list projects --output-json
+```
+
+### Get Project Information
+```
+lagoon get project <project-name>
+```
+
+## Environment Management
+
+### List Environments for a Project
+```
+lagoon list environments -p <project-name>
+```
+Alias: `lagoon list e -p <project-name>`
+
+### Get Environment Information
+```
+lagoon get environment -p <project-name> -e <environment-name>
+```
+
+## SSH Access
+
+### Display SSH Command
+```
+lagoon ssh -p <project-name> -e <environment-name>
+```
+
+### SSH to a Specific Service in Environment
+```
+lagoon ssh -p <project-name> -e <environment-name> -s <service-name>
+```
+
+### SSH to a Specific Container in Service
+```
+lagoon ssh -p <project-name> -e <environment-name> -s <service-name> -c <container-name>
+```
+
+## Deployments
+
+### List Deployments
+```
+lagoon list deployments -p <project-name> -e <environment-name>
+```
+Alias: `lagoon list d -p <project-name> -e <environment-name>`
+
+### Deploy Branch
+```
+lagoon deploy branch -p <project-name> -b <branch-name>
+```
+
+### Promote Environment to Another Environment
+```
+lagoon deploy promote -p <project-name> -s <source-env> -d <destination-env>
+```
+
+## Variables
+
+### List Variables
+```
+lagoon list variables -p <project-name>
+```
+Alias: `lagoon list v -p <project-name>`
+
+### List Environment Variables
+```
+lagoon list variables -p <project-name> -e <environment-name>
+```
+
+### Add Variable to Project
+```
+lagoon add variable -p <project-name> -N <name> -V <value> --scope project
+```
+
+### Add Variable to Environment
+```
+lagoon add variable -p <project-name> -e <environment-name> -N <name> -V <value> --scope environment
+```
+
+## Tasks and Logs
+
+### List Tasks
+```
+lagoon list tasks -p <project-name> -e <environment-name>
+```
+Alias: `lagoon list t -p <project-name> -e <environment-name>`
+
+### Run Task
+```
+lagoon run -p <project-name> -e <environment-name> <task-name>
+```
+
+### Display Logs
+```
+lagoon logs -p <project-name> -e <environment-name> -s <service-name>
+```
+
+## Custom Tasks
+
+### List Available Custom Tasks for an Environment
+```
+lagoon list invokable-tasks -p <project-name> -e <environment-name>
+```
+Alias: `lagoon list dcc -p <project-name> -e <environment-name>`
+
+### Run a Custom Command on an Environment
+```
+lagoon run custom -p <project-name> -e <environment-name> -C "<command>"
+```
+Example: `lagoon run custom -p drupal-example -e main -C "drush status"`
+
+### Invoke a Registered Custom Task
+```
+lagoon run invoke -p <project-name> -e <environment-name> -N "<task-name>"
+```
+Example: `lagoon run invoke -p drupal-example -e main -N "Rebuild cache"`
+
+### Run Pre-Defined Drush Tasks
+```
+lagoon run drush-cacheclear -p <project-name> -e <environment-name>
+lagoon run drush-sqldump -p <project-name> -e <environment-name>
+lagoon run drush-archivedump -p <project-name> -e <environment-name>
+```
+
+### Run Active/Standby Switch
+```
+lagoon run activestandby -p <project-name>
+```
+
+### Notes on Custom Tasks
+- Custom tasks must be defined through the GraphQL API or UI before they can be invoked via CLI
+- Tasks can be defined at environment, project, or group level
+- Tasks have different permission levels (Guest, Developer, Maintainer)
+- Pre and post-rollout tasks can be defined in the `.lagoon.yml` file
+
+### Working with Task Files
+```
+lagoon upload task-file -p <project-name> -e <environment-name> -t <task-id> -f <file-path>
+```
+
+## Backups
+
+### List Backups
+```
+lagoon list backups -p <project-name> -e <environment-name>
+```
+
+### Retrieve Backup
+```
+lagoon retrieve backup -p <project-name> -e <environment-name> -b <backup-id>
+```
+
+## Groups and Users
+
+### List Groups
+```
+lagoon list groups
+```
+Alias: `lagoon list g`
+
+### List Users in a Group
+```
+lagoon list group-users -g <group-name>
+```
+
+### List Projects in a Group
+```
+lagoon list group-projects -g <group-name>
+```
+Alias: `lagoon list gp -g <group-name>`
+
+### List All Users
+```
+lagoon list all-users
+```
+
+### Get Information for a Specific User
+```
+lagoon list user-groups -E <user-email>
+```
+
+## Organizations
+
+### List Organizations
+```
+lagoon list organizations
+```
+
+### List Projects in an Organization
+```
+lagoon list organization-projects -O <organization-name>
+```
+
+### List Users in an Organization
+```
+lagoon list organization-users -O <organization-name>
+```
+
+### List Groups in an Organization
+```
+lagoon list organization-groups -O <organization-name>
+```
+
+## Lagoon Sync Commands
+
+Lagoon Sync is a separate tool for synchronizing data between Lagoon environments.
+
+### Example Config (.lagoon-sync.yml)
+```
+lagoon-sync:
+  mariadb:
+    type: mariadb
+    config:
+      hostname: "${MARIADB_HOST:-mariadb}"
+      username: "${MARIADB_USERNAME:-lagoon}"
+      password: "${MARIADB_PASSWORD:-lagoon}"
+      port:     "${MARIADB_PORT:-3306}"
+      database: "${MARIADB_DATABASE:-lagoon}"
+  cli:
+    type: files
+    config:
+      sync-directory: "/app/storage/"
+```
+
+### Sync Database from Source Environment
+```
+lagoon-sync sync mariadb -p <project-name> -e <source-environment>
+```
+
+### Sync Files from Source Environment
+```
+lagoon-sync sync cli -p <project-name> -e <source-environment>
+```
+
+### Generate Sync Config
+```
+lagoon-sync generate ./docker-compose.yml -o .lagoon-sync.yml
+```
+
+### Interactive Config Generation
+```
+lagoon-sync interactive-config -o .lagoon-sync.yml
+```
+
+## Common Flags
+
+- `-p, --project`: Specify project name
+- `-e, --environment`: Specify environment name
+- `-l, --lagoon`: Specify Lagoon instance
+- `--output-json`: Output as JSON
+- `--output-csv`: Output as CSV
+- `--no-header`: No header on table output
+- `--pretty`: Make JSON output pretty
+- `-v, --verbose`: Enable verbose output
+- `--debug`: Enable debugging output
+- `-i, --ssh-key`: Specify path to SSH key 
