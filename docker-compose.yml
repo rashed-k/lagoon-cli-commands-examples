@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  lagoon-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    # Uncomment and configure volumes if needed:
+    # volumes:
+    #   - ~/.lagoon.yml:/root/.lagoon.yml:ro
+    #   - ~/.ssh/id_rsa:/root/.ssh/id_rsa:ro
+    restart: unless-stopped
+    container_name: lagoon-mcp-server 
